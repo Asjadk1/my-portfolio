@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 Page-a-Day — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,900;1,600&family=Caveat:wght@600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 16px;
+    }
+    .auth-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 38px 34px;
+      text-align: center;
+    }
+    .logo { font-size: 3rem; }
+    .auth-card h1 { font-size: 1.8rem; margin: 6px 0 2px; }
+    .tagline {
+      font-family: 'Caveat', cursive;
+      font-size: 1.4rem;
+      color: var(--rust);
+      margin-bottom: 24px;
+      transform: rotate(-1.5deg);
+    }
+    form { text-align: left; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: #9c8a6e;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 2px;
+      background: #efdfc0;
+    }
+    .switch-mode {
+      margin-top: 18px;
+      font-size: 0.95rem;
+    }
+    .switch-mode a { color: var(--teal); font-weight: 800; cursor: pointer; text-decoration: underline; }
+    .setup-note {
+      margin-top: 20px;
+      background: #fff3d6;
+      border: 2px dashed var(--gold);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      text-align: left;
+      display: none;
+    }
+    .setup-note.visible { display: block; }
+    .guest-note {
+      font-size: 0.8rem;
+      color: #9c8a6e;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="floaties"></div>
+
+  <main class="auth-card panel">
+    <div class="logo">📚</div>
+    <h1>Page-a-Day</h1>
+    <p class="tagline">~ your reading journey starts here ~</p>
+
+    <form id="auth-form">
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input" type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input class="input" type="password" id="password" placeholder="••••••••" autocomplete="current-password" minlength="6" required>
+      </div>
+      <button type="submit" class="btn block" id="submit-btn">🔑 Log in</button>
+      <p class="error-msg" id="auth-error"></p>
+    </form>
+
+    <p class="switch-mode" id="switch-mode">
+      New here? <a id="toggle-mode">Create an account</a>
+    </p>
+
+    <div class="divider">OR</div>
+
+    <button class="btn ghost block" id="google-btn">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+      Continue with Google
+    </button>
+
+    <div style="height:12px"></div>
+
+    <button class="btn gold block" id="guest-btn">👤 Continue as Guest</button>
+    <p class="guest-note">Guest books are saved only on this device.</p>
+
+    <div class="setup-note" id="setup-note">
+      ⚙️ <b>Firebase isn't connected yet</b>, so email &amp; Google login are disabled.
+      Paste your project keys into <code>js/firebase-config.js</code> to enable accounts.
+      Guest mode works right now!
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { firebaseConfig, isConfigured } from './js/firebase-config.js';
+
+    /* floating background */
+    const emojis = ['📚','📖','📕','📗','📘','🔖','☕','✨'];
+    const floaties = document.getElementById('floaties');
+    for (let i = 0; i < 12; i++) {
+      const s = document.createElement('span');
+      s.className = 'floaty';
+      s.textContent = emojis[i % emojis.length];
+      s.style.left = Math.random() * 96 + 'vw';
+      s.style.animationDuration = (14 + Math.random() * 18) + 's';
+      s.style.animationDelay = (-Math.random() * 20) + 's';
+      floaties.appendChild(s);
+    }
+
+    const form = document.getElementById('auth-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const toggleLink = document.getElementById('toggle-mode');
+    const switchP = document.getElementById('switch-mode');
+    const googleBtn = document.getElementById('google-btn');
+    const errEl = document.getElementById('auth-error');
+    const toast = document.getElementById('toast');
+    let signupMode = false;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+    function showError(msg) {
+      errEl.textContent = msg;
+      errEl.classList.remove('visible');
+      void errEl.offsetWidth;
+      errEl.classList.add('visible');
+    }
+
+    toggleLink.addEventListener('click', () => {
+      signupMode = !signupMode;
+      submitBtn.textContent = signupMode ? '🌱 Create account' : '🔑 Log in';
+      switchP.firstChild.textContent = signupMode ? 'Already have an account? ' : 'New here? ';
+      toggleLink.textContent = signupMode ? 'Log in instead' : 'Create an account';
+      errEl.classList.remove('visible');
+    });
+
+    /* guest mode always works */
+    document.getElementById('guest-btn').addEventListener('click', () => {
+      localStorage.setItem('pad_guest', '1');
+      location.href = 'shelf.html';
+    });
+
+    if (!isConfigured) {
+      document.getElementById('setup-note').classList.add('visible');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showToast('⚙️ Connect Firebase first — or continue as Guest!');
+      });
+      googleBtn.addEventListener('click', () => showToast('⚙️ Connect Firebase first — or continue as Guest!'));
+    } else {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const {
+        getAuth, onAuthStateChanged,
+        createUserWithEmailAndPassword, signInWithEmailAndPassword,
+        GoogleAuthProvider, signInWithPopup
+      } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      /* already logged in? go straight to the shelf */
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          localStorage.removeItem('pad_guest');
+          location.href = 'shelf.html';
+        }
+      });
+
+      const friendly = (code) => ({
+        'auth/invalid-credential': 'Wrong email or password. Try again!',
+        'auth/user-not-found': 'No account with that email — create one below!',
+        'auth/wrong-password': 'Wrong password. Try again!',
+        'auth/email-already-in-use': 'That email already has an account — log in instead!',
+        'auth/weak-password': 'Password needs at least 6 characters.',
+        'auth/invalid-email': 'That email doesn\'t look right.',
+        'auth/popup-closed-by-user': 'Google sign-in was closed before finishing.'
+      }[code] || 'Something went wrong: ' + code);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        submitBtn.disabled = true;
+        try {
+          if (signupMode) await createUserWithEmailAndPassword(auth, email, password);
+          else await signInWithEmailAndPassword(auth, email, password);
+        } catch (err) {
+          showError(friendly(err.code));
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+
+      googleBtn.addEventListener('click', async () => {
+        try {
+          await signInWithPopup(auth, new GoogleAuthProvider());
+        } catch (err) {
+          if (err.code !== 'auth/popup-closed-by-user') showError(friendly(err.code));
+        }
+      });
+    }
+  </script>
+</body>
+</html>

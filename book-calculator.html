@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 Page-a-Day — Book Reading Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,900;1,600&family=Caveat:wght@600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --ink: #2d2419;
+      --paper: #fffaf0;
+      --cream: #fdf3e0;
+      --gold: #e8a33d;
+      --rust: #c9572e;
+      --teal: #2e7d6f;
+      --plum: #7d4a8f;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      background: linear-gradient(160deg, #fde8c8 0%, #fbd5a8 35%, #f8c890 100%);
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      position: relative;
+    }
+
+    /* ---------- floating background books ---------- */
+    .floaty {
+      position: fixed;
+      font-size: 2.2rem;
+      opacity: 0.35;
+      animation: drift linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes drift {
+      0%   { transform: translateY(105vh) rotate(-10deg); }
+      100% { transform: translateY(-12vh) rotate(14deg); }
+    }
+
+    /* ---------- main card ---------- */
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--paper);
+      border-radius: 26px;
+      box-shadow: 0 24px 60px rgba(120, 70, 20, 0.30), 0 4px 0 #e9b96b inset;
+      max-width: 600px;
+      width: 100%;
+      padding: 0 0 40px;
+      overflow: hidden;
+      border: 3px solid #3b2c18;
+    }
+
+    /* ---------- hero scene (inline SVG illustration) ---------- */
+    .hero {
+      background: linear-gradient(180deg, #2e4057 0%, #4a5d79 70%, #f8c890 100%);
+      padding: 26px 20px 0;
+      text-align: center;
+      position: relative;
+    }
+    .hero svg { width: 100%; max-width: 380px; display: block; margin: 0 auto; }
+
+    .hero .stars span {
+      position: absolute;
+      color: #ffe9a8;
+      animation: twinkle 2.4s ease-in-out infinite;
+      font-size: 0.9rem;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50%      { opacity: 1;   transform: scale(1.2); }
+    }
+
+    /* book hover wiggle */
+    #open-book { transition: transform 0.3s; transform-origin: center bottom; cursor: pointer; }
+    #open-book:hover { transform: rotate(-3deg) scale(1.05); }
+
+    .flip-page {
+      animation: flip 3.5s ease-in-out infinite;
+      transform-origin: 190px 150px;
+    }
+    @keyframes flip {
+      0%, 55%, 100% { transform: scaleX(1); opacity: 1; }
+      70%           { transform: scaleX(0.05); opacity: 0.9; }
+      85%           { transform: scaleX(0.7); opacity: 1; }
+    }
+
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: clamp(1.7rem, 5vw, 2.4rem);
+      text-align: center;
+      margin: 22px 20px 4px;
+      letter-spacing: -0.5px;
+    }
+    h1 .highlight {
+      background: linear-gradient(transparent 55%, #ffd98a 55%);
+      padding: 0 4px;
+    }
+
+    .subtitle {
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      color: var(--rust);
+      text-align: center;
+      margin-bottom: 26px;
+      transform: rotate(-1.5deg);
+    }
+
+    /* ---------- form ---------- */
+    .form-area { padding: 0 36px; }
+
+    .field { margin-bottom: 26px; }
+
+    label {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 1.05rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    label .val {
+      font-family: 'Caveat', cursive;
+      font-size: 1.6rem;
+      color: var(--teal);
+      font-weight: 700;
+    }
+
+    .slider-row { display: flex; gap: 14px; align-items: center; }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 12px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, var(--gold) var(--fill, 30%), #efe1c8 var(--fill, 30%));
+      outline: none;
+      border: 2px solid #3b2c18;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--paper);
+      border: 3px solid #3b2c18;
+      box-shadow: 0 3px 0 #3b2c18;
+      cursor: grab;
+      transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    input[type="range"]::-moz-range-thumb {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--paper);
+      border: 3px solid #3b2c18;
+      cursor: grab;
+    }
+
+    input[type="number"] {
+      width: 92px;
+      padding: 10px 8px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      text-align: center;
+      color: var(--ink);
+      background: var(--cream);
+      border: 3px solid #3b2c18;
+      border-radius: 12px;
+      box-shadow: 0 3px 0 #3b2c18;
+      outline: none;
+    }
+    input[type="number"]:focus { background: #fff3d6; }
+
+    button.calc {
+      width: 100%;
+      padding: 16px;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      color: var(--paper);
+      background: var(--rust);
+      border: 3px solid #3b2c18;
+      border-radius: 16px;
+      box-shadow: 0 5px 0 #3b2c18;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s, background 0.2s;
+    }
+    button.calc:hover { background: #d9683f; transform: translateY(-2px); box-shadow: 0 7px 0 #3b2c18; }
+    button.calc:active { transform: translateY(3px); box-shadow: 0 2px 0 #3b2c18; }
+
+    /* ---------- result ---------- */
+    .result {
+      margin: 30px 36px 0;
+      background: var(--cream);
+      border: 3px dashed var(--gold);
+      border-radius: 20px;
+      padding: 26px 22px;
+      text-align: center;
+      display: none;
+    }
+    .result.visible { display: block; animation: pop 0.45s cubic-bezier(0.18, 1.4, 0.4, 1); }
+    @keyframes pop {
+      0%   { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+
+    .big-number {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 4.2rem;
+      line-height: 1;
+      color: var(--teal);
+    }
+    .big-label {
+      font-family: 'Caveat', cursive;
+      font-size: 1.7rem;
+      color: var(--rust);
+      margin-top: 2px;
+    }
+
+    .mood { font-size: 2.6rem; margin-top: 6px; }
+
+    /* progress bookshelf */
+    .shelf {
+      margin-top: 18px;
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .shelf .day-book {
+      width: 16px; height: 34px;
+      border-radius: 3px 3px 0 0;
+      border: 2px solid #3b2c18;
+      background: var(--plum);
+      opacity: 0;
+      transform: translateY(10px);
+      animation: shelfIn 0.3s forwards;
+    }
+    @keyframes shelfIn { to { opacity: 1; transform: translateY(0); } }
+
+    .detail {
+      margin-top: 16px;
+      font-size: 0.98rem;
+      line-height: 1.55;
+      border-top: 2px solid #efdfc0;
+      padding-top: 14px;
+    }
+    .detail b { color: var(--rust); }
+
+    .fun-fact {
+      margin: 18px 36px 0;
+      font-family: 'Caveat', cursive;
+      font-size: 1.35rem;
+      color: var(--plum);
+      text-align: center;
+      display: none;
+    }
+    .fun-fact.visible { display: block; }
+
+    .error {
+      margin: 18px 36px 0;
+      text-align: center;
+      color: #b3261e;
+      font-weight: 700;
+      display: none;
+    }
+    .error.visible { display: block; animation: shake 0.4s; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-7px); }
+      75% { transform: translateX(7px); }
+    }
+
+    /* confetti */
+    .confetti {
+      position: fixed;
+      top: -16px;
+      font-size: 1.4rem;
+      z-index: 5;
+      pointer-events: none;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(720deg); }
+    }
+
+    .shelf-link {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 10;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 0.95rem;
+      color: var(--ink);
+      text-decoration: none;
+      background: var(--paper);
+      border: 3px solid #3b2c18;
+      border-radius: 12px;
+      box-shadow: 0 4px 0 #3b2c18;
+      padding: 9px 16px;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .shelf-link:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #3b2c18; }
+
+    @media (max-width: 520px) {
+      .form-area, .result, .fun-fact, .error { margin-left: 18px; margin-right: 18px; padding-left: 18px; padding-right: 18px; }
+      .form-area { padding: 0 18px; }
+      .big-number { font-size: 3.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- floating background emojis (positions/speeds set by JS) -->
+  <div id="floaties"></div>
+
+  <a class="shelf-link" href="shelf.html">📚 My Shelf →</a>
+
+  <main class="card">
+
+    <!-- ======= illustrated night-reading hero ======= -->
+    <div class="hero">
+      <div class="stars">
+        <span style="top:12%; left:8%;  animation-delay:0s">✦</span>
+        <span style="top:22%; left:20%; animation-delay:0.5s">✧</span>
+        <span style="top:10%; left:78%; animation-delay:1s">✦</span>
+        <span style="top:28%; left:90%; animation-delay:1.4s">✧</span>
+        <span style="top:6%;  left:48%; animation-delay:0.8s">✦</span>
+      </div>
+
+      <svg id="open-book" viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An open book under a reading lamp at night">
+        <!-- moon -->
+        <circle cx="318" cy="42" r="22" fill="#ffe9a8"/>
+        <circle cx="310" cy="36" r="6"  fill="#f3d98e"/>
+        <circle cx="326" cy="48" r="4"  fill="#f3d98e"/>
+
+        <!-- lamp -->
+        <rect x="52" y="60" width="6" height="80" rx="3" fill="#1f2a3a"/>
+        <path d="M30 62 L80 62 L66 34 L44 34 Z" fill="#e8a33d" stroke="#1f2a3a" stroke-width="3"/>
+        <ellipse cx="55" cy="142" rx="20" ry="6" fill="#1f2a3a"/>
+        <!-- lamp glow -->
+        <path d="M34 64 L150 150 L76 64 Z" fill="#ffe9a8" opacity="0.25"/>
+
+        <!-- table -->
+        <rect x="20" y="148" width="340" height="10" rx="5" fill="#5a3c22"/>
+
+        <!-- open book -->
+        <g>
+          <path d="M110 148 Q150 118 190 132 Q230 118 270 148 L270 152 Q230 124 190 138 Q150 124 110 152 Z" fill="#c9572e"/>
+          <path d="M114 146 Q152 120 190 133 L190 146 Q152 132 114 150 Z" fill="#fffaf0" stroke="#d8c8a8" stroke-width="1"/>
+          <path d="M266 146 Q228 120 190 133 L190 146 Q228 132 266 150 Z" fill="#fdf3e0" stroke="#d8c8a8" stroke-width="1"/>
+          <!-- flipping page -->
+          <path class="flip-page" d="M262 144 Q226 122 190 134 L190 145 Q226 131 262 148 Z" fill="#ffffff" opacity="0.95"/>
+          <!-- text lines -->
+          <g stroke="#b9a987" stroke-width="2" stroke-linecap="round">
+            <line x1="126" y1="138" x2="172" y2="130"/>
+            <line x1="128" y1="143" x2="170" y2="135"/>
+            <line x1="208" y1="130" x2="254" y2="138"/>
+            <line x1="210" y1="135" x2="252" y2="143"/>
+          </g>
+        </g>
+
+        <!-- sleeping cat -->
+        <g id="cat">
+          <ellipse cx="318" cy="138" rx="26" ry="14" fill="#3b2c18"/>
+          <circle cx="338" cy="128" r="10" fill="#3b2c18"/>
+          <path d="M331 121 L333 113 L338 120 Z" fill="#3b2c18"/>
+          <path d="M345 121 L347 113 L341 119 Z" fill="#3b2c18"/>
+          <path d="M294 140 Q284 146 292 150" stroke="#3b2c18" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <text x="346" y="112" font-size="11" fill="#ffe9a8">z</text>
+          <text x="354" y="102" font-size="14" fill="#ffe9a8">z</text>
+        </g>
+
+        <!-- steaming mug -->
+        <g>
+          <rect x="86" y="128" width="22" height="20" rx="4" fill="#2e7d6f" stroke="#1f2a3a" stroke-width="2.5"/>
+          <path d="M108 132 q10 4 0 10" stroke="#1f2a3a" stroke-width="2.5" fill="none"/>
+          <path d="M93 122 q3 -6 0 -10 M101 122 q3 -6 0 -10" stroke="#fffaf0" stroke-width="2" fill="none" opacity="0.8">
+            <animate attributeName="opacity" values="0.2;0.9;0.2" dur="2.2s" repeatCount="indefinite"/>
+          </path>
+        </g>
+      </svg>
+    </div>
+
+    <h1>How many pages <span class="highlight">a day</span>?</h1>
+    <p class="subtitle">~ set your goal, finish that book! ~</p>
+
+    <form id="calc-form" class="form-area">
+      <div class="field">
+        <label for="pages-range">📖 Pages in the book <span class="val" id="pages-val">320</span></label>
+        <div class="slider-row">
+          <input type="range" id="pages-range" min="10" max="1500" step="10" value="320">
+          <input type="number" id="pages-num" min="1" step="1" value="320" aria-label="pages number">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="days-range">🗓️ Days to finish <span class="val" id="days-val">14</span></label>
+        <div class="slider-row">
+          <input type="range" id="days-range" min="1" max="90" step="1" value="14">
+          <input type="number" id="days-num" min="1" step="1" value="14" aria-label="days number">
+        </div>
+      </div>
+
+      <button type="submit" class="calc">✨ Calculate my plan ✨</button>
+    </form>
+
+    <div class="result" id="result">
+      <div class="big-number" id="per-day">0</div>
+      <div class="big-label">pages per day</div>
+      <div class="mood" id="mood">😌</div>
+      <div class="shelf" id="shelf" title="One book spine per reading day"></div>
+      <div class="detail" id="detail"></div>
+    </div>
+
+    <p class="fun-fact" id="fun-fact"></p>
+    <p class="error" id="error">Hmm… both numbers need to be whole numbers greater than zero! 🙈</p>
+  </main>
+
+  <script>
+    /* ---------- floating background books ---------- */
+    const emojis = ['📚','📖','📕','📗','📘','📙','🔖','☕'];
+    const floaties = document.getElementById('floaties');
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement('span');
+      s.className = 'floaty';
+      s.textContent = emojis[i % emojis.length];
+      s.style.left = Math.random() * 96 + 'vw';
+      s.style.animationDuration = (14 + Math.random() * 18) + 's';
+      s.style.animationDelay = (-Math.random() * 20) + 's';
+      s.style.fontSize = (1.4 + Math.random() * 1.6) + 'rem';
+      floaties.appendChild(s);
+    }
+
+    /* ---------- synced sliders + number inputs ---------- */
+    function syncPair(rangeId, numId, valId) {
+      const range = document.getElementById(rangeId);
+      const num = document.getElementById(numId);
+      const val = document.getElementById(valId);
+      const paint = () => {
+        const pct = ((range.value - range.min) / (range.max - range.min)) * 100;
+        range.style.setProperty('--fill', pct + '%');
+      };
+      range.addEventListener('input', () => { num.value = range.value; val.textContent = range.value; paint(); });
+      num.addEventListener('input', () => {
+        val.textContent = num.value;
+        range.value = Math.min(Math.max(num.value, range.min), range.max);
+        paint();
+      });
+      paint();
+    }
+    syncPair('pages-range', 'pages-num', 'pages-val');
+    syncPair('days-range', 'days-num', 'days-val');
+
+    /* ---------- fun facts ---------- */
+    const facts = [
+      '“A reader lives a thousand lives before he dies.” — George R.R. Martin',
+      'Fun fact: reading just 6 minutes can reduce stress by up to 68%! 🧘',
+      'Fun fact: the average reader finishes about 12 books a year. You can beat that! 🏆',
+      'Fun fact: Theodore Roosevelt read roughly one book per DAY. 🤯',
+      '“So many books, so little time.” — Frank Zappa',
+      'Fun fact: reading before bed can help you fall asleep faster. 😴',
+      'Fun fact: bibliosmia is the love of the smell of old books. 👃📕'
+    ];
+
+    /* ---------- confetti ---------- */
+    function confetti() {
+      const bits = ['📖','⭐','🎉','📚','✨','🔖'];
+      for (let i = 0; i < 26; i++) {
+        const c = document.createElement('span');
+        c.className = 'confetti';
+        c.textContent = bits[Math.floor(Math.random() * bits.length)];
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.animationDuration = (1.6 + Math.random() * 1.8) + 's';
+        c.style.animationDelay = (Math.random() * 0.4) + 's';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+      }
+    }
+
+    /* ---------- count-up animation ---------- */
+    function countUp(el, target) {
+      const dur = 700, start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / dur, 1);
+        el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    /* ---------- main calculation ---------- */
+    const form = document.getElementById('calc-form');
+    const result = document.getElementById('result');
+    const error = document.getElementById('error');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pages = parseInt(document.getElementById('pages-num').value, 10);
+      const days = parseInt(document.getElementById('days-num').value, 10);
+
+      if (!Number.isInteger(pages) || !Number.isInteger(days) || pages < 1 || days < 1) {
+        result.classList.remove('visible');
+        error.classList.remove('visible');
+        void error.offsetWidth;           // restart shake animation
+        error.classList.add('visible');
+        return;
+      }
+      error.classList.remove('visible');
+
+      const perDay = Math.ceil(pages / days);
+      countUp(document.getElementById('per-day'), perDay);
+
+      // mood meter
+      const mood = document.getElementById('mood');
+      if (perDay <= 15)      mood.textContent = '😌 easy breezy';
+      else if (perDay <= 40) mood.textContent = '📖 nice & steady';
+      else if (perDay <= 80) mood.textContent = '💪 ambitious!';
+      else                   mood.textContent = '🔥 hardcore mode!';
+      mood.style.fontSize = '1.6rem';
+
+      // bookshelf: one spine per day (cap at 45 so it stays tidy)
+      const shelf = document.getElementById('shelf');
+      shelf.innerHTML = '';
+      const spines = Math.min(days, 45);
+      const colors = ['#7d4a8f','#c9572e','#2e7d6f','#e8a33d','#39588f'];
+      for (let i = 0; i < spines; i++) {
+        const b = document.createElement('div');
+        b.className = 'day-book';
+        b.style.background = colors[i % colors.length];
+        b.style.height = (26 + (i % 3) * 6) + 'px';
+        b.style.animationDelay = (i * 0.03) + 's';
+        shelf.appendChild(b);
+      }
+      shelf.title = days > 45 ? `Showing 45 of ${days} days` : 'One book spine per reading day';
+
+      // detail text
+      const finish = new Date();
+      finish.setDate(finish.getDate() + days);
+      const dateText = finish.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+      const minutes = perDay * 1.5; // ~1.5 min per page average
+      const timeText = minutes >= 60
+        ? `${Math.floor(minutes / 60)}h ${Math.round(minutes % 60)}m`
+        : `${Math.round(minutes)} minutes`;
+      const lastDay = pages - perDay * (days - 1);
+      let note = `Read <b>${perDay}</b> page${perDay === 1 ? '' : 's'} a day (≈ <b>${timeText}</b> of reading) and you'll close the back cover on <b>${dateText}</b>! 🎯`;
+      if (lastDay > 0 && lastDay < perDay) {
+        note += `<br>Bonus: only <b>${lastDay}</b> page${lastDay === 1 ? '' : 's'} left on the final day — practically a victory lap. 🏁`;
+      }
+      document.getElementById('detail').innerHTML = note;
+
+      // fun fact
+      const fact = document.getElementById('fun-fact');
+      fact.textContent = facts[Math.floor(Math.random() * facts.length)];
+      fact.classList.add('visible');
+
+      result.classList.add('visible');
+      confetti();
+    });
+
+    /* easter egg: click the book illustration */
+    document.getElementById('open-book').addEventListener('click', confetti);
+  </script>
+</body>
+</html>
