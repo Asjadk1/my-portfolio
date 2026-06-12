@@ -193,9 +193,10 @@ const createProgressBar = () => {
     progress.style.top = '0';
     progress.style.left = '0';
     progress.style.height = '3px';
-    progress.style.background = 'linear-gradient(90deg, #1e90ff, #ff0000)';
+    progress.style.background = '#d4af37';
     progress.style.zIndex = '999';
     progress.style.transition = 'width 0.2s ease';
+    progress.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.6)';
     document.body.appendChild(progress);
 
     window.addEventListener('scroll', () => {
@@ -226,18 +227,18 @@ cursorStyle.textContent = `
     .cursor-dot {
         width: 8px;
         height: 8px;
-        background: #1e90ff;
+        background: #d4af37;
         border-radius: 50%;
         position: absolute;
         left: -4px;
         top: -4px;
-        box-shadow: 0 0 10px #1e90ff;
+        box-shadow: 0 0 10px #d4af37;
     }
 
     .cursor-outline {
         width: 30px;
         height: 30px;
-        border: 2px solid #1e90ff;
+        border: 2px solid #d4af37;
         border-radius: 50%;
         position: absolute;
         left: -15px;
@@ -271,5 +272,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('loaded');
 });
 
-console.log('%cWelcome to Asjad\'s Portfolio!', 'color: #1e90ff; font-size: 16px; font-weight: bold;');
-console.log('%cLet\'s build something amazing together!', 'color: #ff0000; font-size: 14px;');
+console.log('%cWelcome to Asjad\'s Portfolio', 'color: #d4af37; font-size: 16px; font-weight: bold;');
+console.log('%cBuilding Excellence Through Code & Innovation', 'color: #e5e7eb; font-size: 14px; font-style: italic;');
