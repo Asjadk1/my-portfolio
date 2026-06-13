@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "page-a-day-asjad-29f67"
+  },
+  "targets": {
+    "page-a-day-asjad-29f67": {
+      "hosting": {
+        "portfolio": [
+          "asjad-portfolio-29f67"
+        ],
+        "app": [
+          "page-a-day-asjad-29f67"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

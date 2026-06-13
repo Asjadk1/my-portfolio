@@ -272,5 +272,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('loaded');
 });
 
-console.log('%cWelcome to Asjad\'s Portfolio', 'color: #d4af37; font-size: 16px; font-weight: bold;');
-console.log('%cBuilding Excellence Through Code & Innovation', 'color: #e5e7eb; font-size: 14px; font-style: italic;');
+console.log('%c>>> ASJAD\'S RETRO PORTFOLIO <<<', 'color: #00ffff; font-size: 16px; font-weight: bold;');
+console.log('%c[ WELCOME TO THE PIXEL REALM ]', 'color: #ffff00; font-size: 14px; font-style: italic;');

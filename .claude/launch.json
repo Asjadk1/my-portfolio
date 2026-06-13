@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8742"],
       "port": 8742
+    },
+    {
+      "name": "attendance",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4173", "--directory", "/Users/asjad/Desktop/attendence calculator"],
+      "port": 4173
     }
   ]
 }
